@@ -11,17 +11,17 @@
 //  O aluno deve preencher seus dados abaixo, e implementar as questões do trabalho
 
 //  ----- Dados do Aluno -----
-//  Nome:
-//  email:
-//  Matrícula:
-//  Semestre:
+//  Nome: Vinicius Santos dos Reis
+//  email: 20241160035@ifba.edu.br
+//  Matrícula: 20241160035
+//  Semestre: 2°
 
 //  Copyright © 2016 Renato Novais. All rights reserved.
 // Última atualização: 07/05/2021
 
 // #################################################
-#ifndef TRABALHO1_PRIMEIROULTIMONOMEMATRICULA_H
-#define TRABALHO1_PRIMEIROULTIMONOMEMATRICULA_H
+#ifndef TRABALHO1_ViniciusReis20241160035_H
+#define TRABALHO1_ViniciusReis20241160035_H
 
 typedef struct DQ
 {
@@ -41,8 +41,6 @@ typedef struct Qtd
 
 } DiasMesesAnos;
 
-int somar(int x, int y); //função utilizada para testes
-int fatorial(int x); //função utilizada para testes
 int q1(char data[]);
 DiasMesesAnos q2(char datainicial[], char datafinal[]);
 int q3(char *texto, char c, int isCaseSensitive);
