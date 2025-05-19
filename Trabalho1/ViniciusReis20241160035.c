@@ -57,13 +57,13 @@ int somar(int x, int y)
     fatorial de x -> x!
  */
 int fatorial(int x)
-{ //função utilizada para testes
-  int i, fat = 1;
-    
-  for (i = x; i > 1; i--)
-    fat = fat * i;
-    
-  return fat;
+{ // função utilizada para testes
+    int i, fat = 1;
+
+    for (i = x; i > 1; i--)
+        fat = fat * i;
+
+    return fat;
 }
 
 int teste(int a)
@@ -87,32 +87,77 @@ int teste(int a)
     0 -> se data inválida
     1 -> se data válida
  @restrições
-    Não utilizar funções próprias de string (ex: strtok)   
+    Não utilizar funções próprias de string (ex: strtok)
     pode utilizar strlen para pegar o tamanho da string
  */
-int q1(char data[])
+int isBissexto(int ano)
 {
-  int datavalida = 1;
-
-  //quebrar a string data em strings sDia, sMes, sAno
-
-
-  //printf("%s\n", data);
-
-  if (datavalida)
-      return 1;
-  else
-      return 0;
+    if ((ano % 4 == 0 && ano % 100 != 0) || (ano % 400 == 0))
+        return 1;
+    else
+        return 0;
 }
 
+int q1(char data[])
+{
+    DataQuebrada dq = quebraData(data);
 
+    if (dq.valido == 0)
+        return 0; // formato inválido
+
+    int dia = dq.iDia;
+    int mes = dq.iMes;
+    int ano = dq.iAno;
+
+    // Ano de 2 dígitos: assume 2000+
+    if (ano < 100)
+    {
+        ano += 2000;
+    }
+
+    // Verificar mês válido
+    if (mes < 1 || mes > 12)
+        return 0;
+
+    // Verificar dias válidos para o mês
+    int diasNoMes;
+
+    switch (mes)
+    {
+    case 1:
+    case 3:
+    case 5:
+    case 7:
+    case 8:
+    case 10:
+    case 12:
+        diasNoMes = 31;
+        break;
+    case 4:
+    case 6:
+    case 9:
+    case 11:
+        diasNoMes = 30;
+        break;
+    case 2:
+        diasNoMes = isBissexto(ano) ? 29 : 28;
+        break;
+    default:
+        return 0;
+    }
+
+    if (dia < 1 || dia > diasNoMes)
+        return 0;
+
+    return 1;
+}
 
 /*
  Q2 = diferença entre duas datas
  @objetivo
     Calcular a diferença em anos, meses e dias entre duas datas
  @entrada
-    uma string datainicial, uma string datafinal. 
+    uma string datainicial, uma string datafinal.
  @saida
     Retorna um tipo DiasMesesAnos. No atributo retorno, deve ter os possíveis valores abaixo
     1 -> cálculo de diferença realizado com sucesso
@@ -123,28 +168,82 @@ int q1(char data[])
  */
 DiasMesesAnos q2(char datainicial[], char datafinal[])
 {
-
-    //calcule os dados e armazene nas três variáveis a seguir
     DiasMesesAnos dma;
 
-    if (q1(datainicial) == 0){
-      dma.retorno = 2;
-      return dma;
-    }else if (q1(datafinal) == 0){
-      dma.retorno = 3;
-      return dma;
-    }else{
-      //verifique se a data final não é menor que a data inicial
-      
-      //calcule a distancia entre as datas
-
-
-      //se tudo der certo
-      dma.retorno = 1;
-      return dma;
-      
+    if (q1(datainicial) == 0)
+    {
+        dma.retorno = 2;
+        return dma;
     }
-    
+
+    if (q1(datafinal) == 0)
+    {
+        dma.retorno = 3;
+        return dma;
+    }
+
+    DataQuebrada d1 = quebraData(datainicial);
+    DataQuebrada d2 = quebraData(datafinal);
+
+    // Verifica se datainicial > datafinal
+    if (d1.iAno > d2.iAno ||
+        (d1.iAno == d2.iAno && d1.iMes > d2.iMes) ||
+        (d1.iAno == d2.iAno && d1.iMes == d2.iMes && d1.iDia > d2.iDia))
+    {
+        dma.retorno = 4;
+        return dma;
+    }
+
+    int dia1 = d1.iDia;
+    int mes1 = d1.iMes;
+    int ano1 = d1.iAno;
+
+    int dia2 = d2.iDia;
+    int mes2 = d2.iMes;
+    int ano2 = d2.iAno;
+
+    // Empréstimo de dias e meses, se necessário
+    if (dia2 < dia1)
+    {
+        mes2 -= 1;
+
+        // dias no mês anterior a datafinal
+        int diasNoMesAnterior;
+        if (mes2 == 0)
+        {
+            mes2 = 12;
+            ano2 -= 1;
+        }
+
+        // calcula quantos dias teve o mês anterior
+        if (mes2 == 2)
+        {
+            diasNoMesAnterior = (ano2 % 4 == 0 && (ano2 % 100 != 0 || ano2 % 400 == 0)) ? 29 : 28;
+        }
+        else if (mes2 == 4 || mes2 == 6 || mes2 == 9 || mes2 == 11)
+        {
+            diasNoMesAnterior = 30;
+        }
+        else
+        {
+            diasNoMesAnterior = 31;
+        }
+
+        dia2 += diasNoMesAnterior;
+    }
+
+    if (mes2 < mes1)
+    {
+        ano2 -= 1;
+        mes2 += 12;
+    }
+
+    dma.qtdDias = dia2 - dia1;
+    dma.qtdMeses = mes2 - mes1;
+    dma.qtdAnos = ano2 - ano1;
+
+    dma.retorno = 1;
+    return dma;
 }
 
 /*
@@ -157,10 +256,56 @@ DiasMesesAnos q2(char datainicial[], char datafinal[])
  @saida
     Um número n >= 0.
  */
+
+void paraMaiusculas(char *texto)
+{
+    for (int i = 0; texto[i] != '\0'; i++)
+    {
+        if (texto[i] >= 'a' && texto[i] <= 'z')
+        {
+            texto[i] = texto[i] - 32;
+        }
+    }
+}
 int q3(char *texto, char c, int isCaseSensitive)
 {
-    int qtdOcorrencias = -1;
+    int qtdOcorrencias = 0;
+    if (isCaseSensitive)
+    {
+        for (int i = 0; texto[i]; i++)
+        {
+            if (c == texto[i])
+            {
+                qtdOcorrencias++;
+            }
+        }
+    }
+    else
+    {
+        if (c >= 'a' && c <= 'z')
+        {
+            c = c - 32;
+        }
 
+        char textoCopia[1000];
+        int x = 0;
+        while (texto[x] != '\0')
+        {
+            textoCopia[x] = texto[x];
+            x++;
+        }
+        textoCopia[x] = '\0'; 
+
+        paraMaiusculas(textoCopia);
+
+        for (int y = 0; textoCopia[y]; y++)
+        {
+            if (textoCopia[y] == c)
+            {
+                qtdOcorrencias++;
+            }
+        }
+    }
     return qtdOcorrencias;
 }
 
@@ -181,10 +326,52 @@ int q3(char *texto, char c, int isCaseSensitive)
  */
 int q4(char *strTexto, char *strBusca, int posicoes[30])
 {
-    int qtdOcorrencias = -1;
+    int qtdOcorrencias = 0;
+    int idxTexto = 0;
+    int idxBusca = 0;
+    int tamTexto = 0;
+    int tamBusca = 0;
+
+    // Calcula tamanho do texto
+    while (strTexto[tamTexto] != '\0')
+        tamTexto++;
+
+    // Calcula tamanho da palavra de busca
+    while (strBusca[tamBusca] != '\0')
+        tamBusca++;
+
+    // Percorre o texto base
+    while (idxTexto < tamTexto)
+    {
+        int encontrou = 1;
+
+        for (idxBusca = 0; idxBusca < tamBusca; idxBusca++)
+        {
+            if (strTexto[idxTexto + idxBusca] != strBusca[idxBusca])
+            {
+                encontrou = 0;
+                break;
+            }
+        }
+
+        if (encontrou)
+        {
+            // Armazena a posição da ocorrência (começando do índice 1)
+            posicoes[qtdOcorrencias * 2] = idxTexto + 1;                // Início
+            posicoes[qtdOcorrencias * 2 + 1] = idxTexto + tamBusca;     // Fim
+            qtdOcorrencias++;
+
+            idxTexto += tamBusca; // Avança após a ocorrência
+        }
+        else
+        {
+            idxTexto++;
+        }
+    }
 
     return qtdOcorrencias;
 }
+
 
 /*
  Q5 = inverte número
@@ -198,8 +385,15 @@ int q4(char *strTexto, char *strBusca, int posicoes[30])
 
 int q5(int num)
 {
+     int invertido = 0;
 
-    return num;
+    while (num > 0)
+    {
+        invertido = invertido * 10 + (num % 10);
+        num /= 10;
+    }
+
+    return invertido;
 }
 
 /*
@@ -212,67 +406,123 @@ int q5(int num)
     Quantidade de vezes que número de busca ocorre em número base
  */
 
-int q6(int numerobase, int numerobusca)
-{
-    int qtdOcorrencias;
+
+int contarDigitos(int num) {
+    if (num == 0) return 1;
+    int cont = 0;
+    while (num > 0) {
+        cont++;
+        num /= 10;
+    }
+    return cont;
+}
+
+void numeroParaVetor(int num, int vet[], int tamanho) {
+    for (int i = tamanho - 1; i >= 0; i--) {
+        vet[i] = num % 10;
+        num /= 10;
+    }
+}
+
+int q6(int numerobase, int numerobusca) {
+    int qtdOcorrencias = 0;
+
+    int tamBase = contarDigitos(numerobase);
+    int tamBusca = contarDigitos(numerobusca);
+
+    int digitosBase[20];
+    int digitosBusca[20];
+
+    numeroParaVetor(numerobase, digitosBase, tamBase);
+    numeroParaVetor(numerobusca, digitosBusca, tamBusca);
+
+    int pos = 0;
+    while (pos <= tamBase - tamBusca) {
+        int bateu = 1;
+        for (int z = 0; z < tamBusca; z++) {
+            if (digitosBase[pos + z] != digitosBusca[z]) {
+                bateu = 0;
+                break;
+            }
+        }
+        if (bateu) {
+            qtdOcorrencias++;
+            pos += tamBusca; // pula o tamanho da busca pra evitar sobreposição
+        } else {
+            pos++;
+        }
+    }
+
     return qtdOcorrencias;
 }
 
-DataQuebrada quebraData(char data[]){
-  DataQuebrada dq;
-  char sDia[3];
-	char sMes[3];
-	char sAno[5];
-	int i; 
 
-	for (i = 0; data[i] != '/'; i++){
-		sDia[i] = data[i];	
-	}
-	if(i == 1 || i == 2){ // testa se tem 1 ou dois digitos
-		sDia[i] = '\0';  // coloca o barra zero no final
-	}else {
-		dq.valido = 0;
+
+DataQuebrada quebraData(char data[])
+{
+    DataQuebrada dq;
+    char sDia[3];
+    char sMes[3];
+    char sAno[5];
+    int i;
+
+    for (i = 0; data[i] != '/'; i++)
+    {
+        sDia[i] = data[i];
+    }
+    if (i == 1 || i == 2)
+    {                   // testa se tem 1 ou dois digitos
+        sDia[i] = '\0'; // coloca o barra zero no final
+    }
+    else
+    {
+        dq.valido = 0;
+        return dq;
+    }
+
+    int j = i + 1; // anda 1 cada para pular a barra
+    i = 0;
+
+    for (; data[j] != '/'; j++)
+    {
+        sMes[i] = data[j];
+        i++;
+    }
+
+    if (i == 1 || i == 2)
+    {                   // testa se tem 1 ou dois digitos
+        sMes[i] = '\0'; // coloca o barra zero no final
+    }
+    else
+    {
+        dq.valido = 0;
+        return dq;
+    }
+
+    j = j + 1; // anda 1 cada para pular a barra
+    i = 0;
+
+    for (; data[j] != '\0'; j++)
+    {
+        sAno[i] = data[j];
+        i++;
+    }
+
+    if (i == 2 || i == 4)
+    {                   // testa se tem 2 ou 4 digitos
+        sAno[i] = '\0'; // coloca o barra zero no final
+    }
+    else
+    {
+        dq.valido = 0;
+        return dq;
+    }
+
+    dq.iDia = atoi(sDia);
+    dq.iMes = atoi(sMes);
+    dq.iAno = atoi(sAno);
+
+    dq.valido = 1;
+
     return dq;
-  }  
-	
-
-	int j = i + 1; //anda 1 cada para pular a barra
-	i = 0;
-
-	for (; data[j] != '/'; j++){
-		sMes[i] = data[j];
-		i++;
-	}
-
-	if(i == 1 || i == 2){ // testa se tem 1 ou dois digitos
-		sMes[i] = '\0';  // coloca o barra zero no final
-	}else {
-		dq.valido = 0;
-    return dq;
-  }
-	
-
-	j = j + 1; //anda 1 cada para pular a barra
-	i = 0;
-	
-	for(; data[j] != '\0'; j++){
-	 	sAno[i] = data[j];
-	 	i++;
-	}
-
-	if(i == 2 || i == 4){ // testa se tem 2 ou 4 digitos
-		sAno[i] = '\0';  // coloca o barra zero no final
-	}else {
-		dq.valido = 0;
-    return dq;
-  }
-
-  dq.iDia = atoi(sDia);
-  dq.iMes = atoi(sMes);
-  dq.iAno = atoi(sAno); 
-
-	dq.valido = 1;
-    
-  return dq;
 }
-
